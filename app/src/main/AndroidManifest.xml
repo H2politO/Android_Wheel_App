@@ -16,14 +16,17 @@
         <uses-library android:name="com.android.future.usb.accessory" />
         <activity
             android:name=".IdraActivity"
-            android:exported="false"
+            android:exported="true"
             android:screenOrientation="landscape">
             <intent-filter>
-                <action android:name="android.hardware.usn.action.USB_ACCESSORY_ATTACHED" />
+                <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
             </intent-filter>
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:value=""/>
         </activity>
         <activity
             android:name=".MainActivity"
