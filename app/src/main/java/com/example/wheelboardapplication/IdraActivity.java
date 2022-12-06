@@ -118,7 +118,7 @@ public class IdraActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        initSerial();
+        //initSerial();
         String msgMqtt = "Hello world";
         if(connectedClient)
             publish(SPEED_CHANNEL, msgMqtt);
@@ -146,77 +146,19 @@ public class IdraActivity extends AppCompatActivity {
         }
     };
 
-
-    //function for initialize the serial device
-    private void initSerial() {
-        //find all device connected
+    //dataReceiver init Thread for read data from usb
+    @SuppressLint("SetTextI18n")
+    private void initSerial(){
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        dataReceiver = new DataReceiver(usbManager, IdraActivity.this, DataReceiver.NUCLEO_MODE, () -> {
+            runOnUiThread(() ->{
+                //set ui interface
+                tv_speed.setText(Integer.toString(dataReceiver.speedKmH));
+            });
+        });
 
-        ProbeTable customTable = new ProbeTable();
-        customTable.addProduct(0x0483, 0x5740, CdcAcmSerialDriver.class);
-        //find all drivers for the usb device
-        UsbSerialProber prober = new UsbSerialProber(customTable);
-        List<UsbSerialDriver> availableDrivers = prober.findAllDrivers(usbManager);
-
-        if(availableDrivers.isEmpty()){
-            Toast.makeText(getApplicationContext(), "Driver not found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        //use first driver available
-        UsbSerialDriver usbDriver = availableDrivers.get(0);
-        UsbSerialPort port = usbDriver.getPorts().get(0);
-        //take usbConnection
-        UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDriver.getDevice());
-
-        dataReceiver = new DataReceiver(port, usbDeviceConnection);
-
-        Thread readUsbThread = new Thread(this.serialReceiverFunction);
-
-        readUsbThread.start();
     }
 
-    //operation of read with another Thread
-    Runnable serialReceiverFunction = new Runnable() {
-        final int BUFF_SIZE = 150;
-        @SuppressLint("SetTextI18n")
-
-        @Override
-        public void run() {
-            int msgLen, lastBufIndex = 0;
-            byte[] dataBuf = new byte[BUFF_SIZE];
-
-            try{
-                byte[] data;
-                while (true) {
-                    data = new byte[50];
-                    //wait message
-                    while ((msgLen = dataReceiver.port.read(data, 100)) == 0) ;
-                    //Push message to buffer
-                    for(int i = 0; i <msgLen; i++)
-                        dataBuf[i + lastBufIndex] = data[i];
-
-                    lastBufIndex += msgLen;
-                    //check buffer full
-                    if(lastBufIndex > (BUFF_SIZE - 50)){
-                        //Run on separate thred(slow)
-                        dataReceiver.startEmptyBuffer(dataBuf, lastBufIndex);
-
-                        //clean buffer
-                        dataBuf = new byte[BUFF_SIZE];
-                        lastBufIndex = 0;
-                    }
-                    //call the thread of ui to update value
-
-                    runOnUiThread(() -> {
-                        //set the field of ui to update
-                        tv_speed.setText(Integer.toString(dataReceiver.speedKmH));
-                    });
-                }
-            }catch (IOException ioE){
-                finish();
-            }
-        }
-    };
 
     private void publish(String topic, byte[] payload){
         if(!connectedClient)
