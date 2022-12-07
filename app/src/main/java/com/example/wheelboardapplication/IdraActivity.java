@@ -7,28 +7,22 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.hoho.android.usbserial.driver.CdcAcmSerialDriver;
-import com.hoho.android.usbserial.driver.ProbeTable;
-import com.hoho.android.usbserial.driver.UsbSerialDriver;
-import com.hoho.android.usbserial.driver.UsbSerialPort;
-import com.hoho.android.usbserial.driver.UsbSerialProber;
-
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 
 import info.mqtt.android.service.Ack;
 import info.mqtt.android.service.MqttAndroidClient;
@@ -47,8 +41,8 @@ public class IdraActivity extends AppCompatActivity {
 
     //varMqtt
     String clientId = MqttClient.generateClientId();
-    MqttAndroidClient mqttClient;
-    boolean connectedClient;
+    public MqttAndroidClient mqttClient;
+    boolean connectedClient = false;
 
 
     Intent intent = new Intent(ACTION_USB_PERMISSION);
@@ -59,6 +53,7 @@ public class IdraActivity extends AppCompatActivity {
     TextView tv_speed;
     TextView tv_pressure;
     TextView tv_emergences;
+    Button bt_publish;
 
 
     @Override
@@ -69,6 +64,7 @@ public class IdraActivity extends AppCompatActivity {
         tv_speed = findViewById(R.id.speed);
         tv_pressure = findViewById(R.id.pressure);
         tv_emergences = findViewById(R.id.emergences);
+        bt_publish = findViewById(R.id.publishButton);
 
         //initiSerial comunication, and request permission
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -92,6 +88,8 @@ public class IdraActivity extends AppCompatActivity {
 
         //connection with client mqtt
         mqttClient = new MqttAndroidClient(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
+        //MqttSender mqttSender = new MqttSender(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
+
         try{
             IMqttToken token = mqttClient.connect();
             token.setActionCallback(new IMqttActionListener() {
@@ -107,10 +105,20 @@ public class IdraActivity extends AppCompatActivity {
                     connectedClient = false;
                 }
             });
+            token.getActionCallback();
         }catch (Exception e){
             e.printStackTrace();
         }
-        publish(SPEED_CHANNEL, "Hello World onCreate");
+
+
+        publish(SPEED_CHANNEL, "20");
+
+        bt_publish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                publish(SPEED_CHANNEL, "23");
+            }
+        });
     }
 
 
@@ -119,9 +127,9 @@ public class IdraActivity extends AppCompatActivity {
         super.onStart();
 
         //initSerial();
-        String msgMqtt = "Hello world";
-        if(connectedClient)
-            publish(SPEED_CHANNEL, msgMqtt);
+        //MqttSender mqttSender = new MqttSender(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
+        //mqttSender.publishMsg(SPEED_CHANNEL, "20");
+        publish(SPEED_CHANNEL, "23");
     }
 
 
@@ -150,23 +158,25 @@ public class IdraActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void initSerial(){
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        dataReceiver = new DataReceiver(usbManager, IdraActivity.this, DataReceiver.NUCLEO_MODE, () -> {
+        dataReceiver = new DataReceiver(usbManager, IdraActivity.this, DataReceiver.DIRECT_MODE, () -> {
             runOnUiThread(() ->{
                 //set ui interface
                 tv_speed.setText(Integer.toString(dataReceiver.speedKmH));
+                publish(SPEED_CHANNEL, Integer.toString(dataReceiver.speedKmH));
             });
         });
 
     }
 
-
     private void publish(String topic, byte[] payload){
         if(!connectedClient)
             return;
+
         MqttMessage message = new MqttMessage(payload);
         message.setQos(0);
         message.setRetained(true);
-        mqttClient.publish(topic, message);
+        IMqttDeliveryToken iMqttDeliveryToken = mqttClient.publish(topic, message);
+
     }
 
     private void publish(String topic, String payload){
