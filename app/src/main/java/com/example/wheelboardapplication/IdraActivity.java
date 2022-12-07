@@ -16,9 +16,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.nio.charset.StandardCharsets;
@@ -38,17 +40,13 @@ public class IdraActivity extends AppCompatActivity {
     //varUsb
     DataReceiver dataReceiver; //class for parse the dataIn
     UsbDevice device;
+    Intent intent = new Intent(ACTION_USB_PERMISSION);
 
     //varMqtt
     String clientId = MqttClient.generateClientId();
-    public MqttAndroidClient mqttClient;
-    boolean connectedClient = false;
+    MqttSender mqttSender;
 
-
-    Intent intent = new Intent(ACTION_USB_PERMISSION);
-
-
-    //textView
+    //UI var
     TextView tv_deviceUsb;
     TextView tv_speed;
     TextView tv_pressure;
@@ -66,7 +64,7 @@ public class IdraActivity extends AppCompatActivity {
         tv_emergences = findViewById(R.id.emergences);
         bt_publish = findViewById(R.id.publishButton);
 
-        //initiSerial comunication, and request permission
+        //initSerial communication, and request permission
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         //hash map if are more than one device
         HashMap<String, UsbDevice> deviceMap = usbManager.getDeviceList();
@@ -87,36 +85,12 @@ public class IdraActivity extends AppCompatActivity {
         }
 
         //connection with client mqtt
-        mqttClient = new MqttAndroidClient(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
-        //MqttSender mqttSender = new MqttSender(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
-
-        try{
-            IMqttToken token = mqttClient.connect();
-            token.setActionCallback(new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    Toast.makeText(IdraActivity.this, "Mqtt client connect", Toast.LENGTH_SHORT).show();
-                    connectedClient = true;
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Toast.makeText(IdraActivity.this, "Mqtt client not connect",  Toast.LENGTH_SHORT).show();
-                    connectedClient = false;
-                }
-            });
-            token.getActionCallback();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-        publish(SPEED_CHANNEL, "20");
+        mqttSender = new MqttSender(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
 
         bt_publish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                publish(SPEED_CHANNEL, "23");
+                mqttSender.publishMsg(SPEED_CHANNEL, "25");
             }
         });
     }
@@ -126,10 +100,6 @@ public class IdraActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        //initSerial();
-        //MqttSender mqttSender = new MqttSender(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
-        //mqttSender.publishMsg(SPEED_CHANNEL, "20");
-        publish(SPEED_CHANNEL, "23");
     }
 
 
@@ -162,25 +132,10 @@ public class IdraActivity extends AppCompatActivity {
             runOnUiThread(() ->{
                 //set ui interface
                 tv_speed.setText(Integer.toString(dataReceiver.speedKmH));
-                publish(SPEED_CHANNEL, Integer.toString(dataReceiver.speedKmH));
+                mqttSender.publishMsg(SPEED_CHANNEL, Integer.toString(dataReceiver.speedKmH));
             });
         });
 
     }
 
-    private void publish(String topic, byte[] payload){
-        if(!connectedClient)
-            return;
-
-        MqttMessage message = new MqttMessage(payload);
-        message.setQos(0);
-        message.setRetained(true);
-        IMqttDeliveryToken iMqttDeliveryToken = mqttClient.publish(topic, message);
-
-    }
-
-    private void publish(String topic, String payload){
-        byte[] data = payload.getBytes(StandardCharsets.UTF_8);
-        publish(topic, data);
-    }
 }

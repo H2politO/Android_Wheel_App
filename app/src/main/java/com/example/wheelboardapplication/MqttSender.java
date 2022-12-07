@@ -7,9 +7,7 @@ import androidx.annotation.NonNull;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.MqttToken;
 
 import java.nio.charset.StandardCharsets;
 
@@ -21,20 +19,18 @@ public class MqttSender {
     private static final String SERVER_URI = "tcp://broker.hivemq.com:1883";
 
     MqttAndroidClient mqttAndroidClient;
-    boolean connectedClient = false;
 
     public MqttSender(Context context, String serverUri, String clientID, Ack ack){
-        MqttConnectOptions options = new MqttConnectOptions();
-        options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
 
         mqttAndroidClient = new MqttAndroidClient(context, serverUri, clientID, ack);
         IMqttToken token;
 
-        token = mqttAndroidClient.connect(options);
+        token = mqttAndroidClient.connect();
         token.setActionCallback(new IMqttActionListener() {
             @Override
             public void onSuccess(IMqttToken asyncActionToken) {
                 Toast.makeText(context, "Mqtt client connect", Toast.LENGTH_SHORT).show();
+                //insert dequeue list of message if necessary
             }
 
             @Override
@@ -50,7 +46,7 @@ public class MqttSender {
     }
 
     private void publish(String topic, byte[] payload){
-        if(!connectedClient)
+        if(!mqttAndroidClient.isConnected())
             return;
         MqttMessage message = new MqttMessage(payload);
         message.setQos(0);
