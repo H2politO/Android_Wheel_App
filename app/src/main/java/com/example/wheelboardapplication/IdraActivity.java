@@ -85,6 +85,7 @@ public class IdraActivity extends AppCompatActivity {
             registerReceiver(usbReceiver, intentFilter);
 
             usbManager.requestPermission(device, permissionIntent);
+            //initSerial();
         }else{
             tv_deviceUsb.setText("Device not found");
         }

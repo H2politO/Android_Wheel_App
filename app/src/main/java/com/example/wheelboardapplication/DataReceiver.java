@@ -131,6 +131,7 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
                 break;
         }
 
+        //customTable.addProduct(0x2341, 0x0043, CdcAcmSerialDriver.class);
         UsbSerialProber prober = new UsbSerialProber(customTable);
         List<UsbSerialDriver> availableDrivers = prober.findAllDrivers(usbManager);
 
