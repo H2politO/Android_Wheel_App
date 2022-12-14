@@ -105,7 +105,7 @@ public class IdraActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
+        initSerial();
     }
 
 

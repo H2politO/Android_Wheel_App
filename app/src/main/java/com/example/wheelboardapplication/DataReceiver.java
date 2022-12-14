@@ -121,7 +121,7 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
 
         switch(mode) {
             case DIRECT_MODE:
-                customTable.addProduct(0x0483, 0x5740, CdcAcmSerialDriver.class); //STM32 Direct USB
+                customTable.addProduct(0x0483, 0x374B, CdcAcmSerialDriver.class); //STM32 Direct USB
                 baudRate = 9600;
                 break;
 
