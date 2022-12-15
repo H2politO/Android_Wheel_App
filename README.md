@@ -10,4 +10,4 @@ For using properly mqtt:
     - add in gradle.properties -> enebleJetifire=true  
     - add in settings.gradle -> mavenCentral() & maven{url...}  
     - add timber  
-    
+    - modify the implementation of serviceLibrary-release.aar with correct directory

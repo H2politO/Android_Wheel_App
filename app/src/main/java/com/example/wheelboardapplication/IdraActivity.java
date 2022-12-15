@@ -80,7 +80,7 @@ public class IdraActivity extends AppCompatActivity {
             tv_deviceUsb.setText("Device found");
 
             //call method permission if necessary
-            PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+            PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE);
             IntentFilter intentFilter = new IntentFilter(ACTION_USB_PERMISSION);
             registerReceiver(usbReceiver, intentFilter);
 
@@ -105,7 +105,7 @@ public class IdraActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        initSerial();
+        //initSerial();
     }
 
 
