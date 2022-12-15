@@ -46,6 +46,6 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:5.0.1'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
 
-    implementation files("C:\\Users\\lucac\\OneDrive\\Desktop\\serviceLibrary-release.aar")
+    implementation files("..\\serviceLibrary-release.aar")
 
 }
