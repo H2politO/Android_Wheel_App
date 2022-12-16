@@ -21,7 +21,7 @@ public class IdraHandler {
     public float fuelCellTemp = 0;
     public float fuelCellVolt = 0;
     public float superCapVolt = 0;
-    public float fuelCellAmps = 0;
+    public float motorAmps = 0;
     public float motorDuty= 0;
     public float fanDuty = 0;
 
@@ -47,14 +47,12 @@ public class IdraHandler {
 
     public void parseMessage( int msgId, int msgLen, byte[] RxData){
 
+        actuationOn = (lastActHBTime - currActHBTime) <= 1100;
+
         switch(msgId){
             case actuationHB:
                 lastActHBTime = currActHBTime;
                 currActHBTime = System.currentTimeMillis();
-                if((lastActHBTime - currActHBTime) > 1100)
-                    actuationOn = false;
-                else
-                    actuationOn = true;
                 break;
             case emeID:
                 H2Eme = (Byte.toUnsignedInt(RxData[0]) == 1);
@@ -63,25 +61,25 @@ public class IdraHandler {
                 intEme = (Byte.toUnsignedInt(RxData[3]) == 1);
                 break;
             case speedID:
-                speedKmH = getFloatMemCpy(RxData, msgLen);
+                speedKmH = byteToFloat(RxData[3], RxData[2], RxData[1], RxData[0]);
                 break;
             case tempID:
-                fuelCellTemp = getFloatMemCpy(RxData, msgLen);
+                fuelCellTemp = byteToFloat(RxData[3], RxData[2], RxData[1], RxData[0]);
                 break;
             case FC_VoltID:
-                fuelCellVolt = getFloatMemCpy(RxData, msgLen);
+                fuelCellVolt = byteToFloat(RxData[3], RxData[2], RxData[1], RxData[0]);
                 break;
             case SC_VoltID:
-                superCapVolt = getFloatMemCpy(RxData, msgLen);
+                superCapVolt = byteToFloat(RxData[3], RxData[2], RxData[1], RxData[0]);
                 break;
             case currentID:
-                fuelCellAmps = getFloatMemCpy(RxData, msgLen);
+                motorAmps = byteToFloat(RxData[3], RxData[2], RxData[1], RxData[0]);
                 break;
             case motorDutyID:
-                motorDuty = getFloatMemCpy(RxData, msgLen);
+                motorDuty = byteToFloat(RxData[3], RxData[2], RxData[1], RxData[0]);
                 break;
             case fanDutyID:
-                fanDuty = getFloatMemCpy(RxData, msgLen);
+                fanDuty = byteToFloat(RxData[3], RxData[2], RxData[1], RxData[0]);
                 break;
             case buttonsID:
                 strategy = Byte.toUnsignedInt(RxData[0]);
@@ -115,16 +113,20 @@ public class IdraHandler {
         return outValue;
     }
 
+    public float byteToFloat(byte... data) {
+        return ByteBuffer.wrap(data).getFloat();
+    }
+
     public String getEmergencyString(){
         String out = "";
         if(H2Eme)
-            out = "Em. H2";
+            out = "⚠️Em. H2";
         if(deadEme)
-            out = "Em. DeadMan";
+            out = "⚠️Em. DeadMan";
         if(intEme)
-            out = "Em. Interna";
+            out = "⚠️Em. Interna";
         if(extEme)
-            out = "Em. Esterna";
+            out = "⚠️Em. Esterna";
 
         return out;
     }
