@@ -15,6 +15,7 @@ public class IdraHandler {
     public boolean purge = false;
     public boolean motorOn = false;
     //MISCELLANEOUS
+    public boolean actuationOn = false;
     public int strategy = 0;
     public float speedKmH = 0;
     public float fuelCellTemp = 0;
@@ -31,11 +32,15 @@ public class IdraHandler {
     static final private int FC_VoltID = 0x013;
     static final private int SC_VoltID = 0x014;
     //ID attuazione
+    static final private int actuationHB = 0x03F;
     static final private int currentID = 0x030;
     static final private int motorDutyID = 0x031;
     static final private int fanDutyID = 0x032;
     //ID volante
     static final private int buttonsID = 0x020;
+
+    private long lastActHBTime = 0;
+    private long currActHBTime = 0;
 
     IdraHandler(){
     }
@@ -43,7 +48,14 @@ public class IdraHandler {
     public void parseMessage( int msgId, int msgLen, byte[] RxData){
 
         switch(msgId){
-
+            case actuationHB:
+                lastActHBTime = currActHBTime;
+                currActHBTime = System.currentTimeMillis();
+                if((lastActHBTime - currActHBTime) > 1100)
+                    actuationOn = false;
+                else
+                    actuationOn = true;
+                break;
             case emeID:
                 H2Eme = (Byte.toUnsignedInt(RxData[0]) == 1);
                 deadEme = (Byte.toUnsignedInt(RxData[1]) == 1);
@@ -51,25 +63,25 @@ public class IdraHandler {
                 intEme = (Byte.toUnsignedInt(RxData[3]) == 1);
                 break;
             case speedID:
-                speedKmH = getFloatMemCpy(Arrays.copyOf(RxData, msgLen));
+                speedKmH = getFloatMemCpy(RxData, msgLen);
                 break;
             case tempID:
-                fuelCellTemp = getFloatMemCpy(Arrays.copyOf(RxData, msgLen));
+                fuelCellTemp = getFloatMemCpy(RxData, msgLen);
                 break;
             case FC_VoltID:
-                fuelCellVolt = getFloatMemCpy(Arrays.copyOf(RxData, msgLen));
+                fuelCellVolt = getFloatMemCpy(RxData, msgLen);
                 break;
             case SC_VoltID:
-                superCapVolt = getFloatMemCpy(Arrays.copyOf(RxData, msgLen));
+                superCapVolt = getFloatMemCpy(RxData, msgLen);
                 break;
             case currentID:
-                fuelCellAmps = getFloatMemCpy(Arrays.copyOf(RxData, msgLen));
+                fuelCellAmps = getFloatMemCpy(RxData, msgLen);
                 break;
             case motorDutyID:
-                motorDuty = getFloatMemCpy(Arrays.copyOf(RxData, msgLen));
+                motorDuty = getFloatMemCpy(RxData, msgLen);
                 break;
             case fanDutyID:
-                fanDuty = getFloatMemCpy(Arrays.copyOf(RxData, msgLen));
+                fanDuty = getFloatMemCpy(RxData, msgLen);
                 break;
             case buttonsID:
                 strategy = Byte.toUnsignedInt(RxData[0]);
@@ -83,31 +95,39 @@ public class IdraHandler {
                 break;
         }
     }
-/*
-    private float getFloatMemCpy(byte[] data){
+
+    private float getFloatMemCpy(byte[] rawData, int msgLen){
         float outValue = -1;
+        byte[] data = Arrays.copyOf(rawData, msgLen);
+        byte tmp;
+
+        //Flip incoming data array
+        for(int i = 0; i < data.length; i ++){
+            tmp = data[i];
+            data[i] = data[data.length - i - 1];
+            data[data.length - i - 1] = tmp;
+        }
 
         if( data.length == 4){
             outValue = ByteBuffer.wrap(data).getFloat();
         }
 
         return outValue;
-    }*/
-    public float getFloatMemCpy(byte... data) {
-        return ByteBuffer.wrap(data).getFloat();
     }
 
     public String getEmergencyString(){
         String out = "";
         if(H2Eme)
-            out = "Emergenza idrogeno";
+            out = "Em. H2";
         if(deadEme)
-            out = "Emergenza deadman";
+            out = "Em. DeadMan";
         if(intEme)
-            out = "Emergenza interna";
+            out = "Em. Interna";
         if(extEme)
-            out = "Emergenza esterna";
+            out = "Em. Esterna";
 
         return out;
     }
+
+
 }

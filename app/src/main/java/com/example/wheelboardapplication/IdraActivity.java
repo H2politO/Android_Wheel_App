@@ -56,6 +56,8 @@ public class IdraActivity extends AppCompatActivity {
     TextView tv_emergences;
     TextView tv_fccCurrent;
     TextView tv_temperature;
+    TextView tv_purge;
+    TextView tv_shortTW;
 
     Button bt_publish;
 
@@ -73,6 +75,9 @@ public class IdraActivity extends AppCompatActivity {
         tv_emergences = findViewById(R.id.emergences);
         tv_fccCurrent = findViewById(R.id.fccCurrent);
         tv_temperature = findViewById(R.id.temperature);
+        tv_purge = findViewById(R.id.purge);
+        tv_shortTW = findViewById(R.id.shortTW);
+
         bt_publish = findViewById(R.id.publishButton);
 
         //initSerial communication, and request permission
@@ -148,11 +153,22 @@ public class IdraActivity extends AppCompatActivity {
             runOnUiThread(() ->{
                 //set ui interface
                 tv_speed.setText(String.format("%.2f Km/h", veichleHandler.speedKmH));
-                tv_fccCurrent.setText(String.format("%.2f A", veichleHandler.fuelCellAmps));
+                tv_fccCurrent.setText(String.format("%.2f V", veichleHandler.superCapVolt));
                 tv_temperature.setText(String.format("%.2f °C", veichleHandler.fuelCellTemp));
-
-                tv_pressure.setText(String.format("%.0f perc", veichleHandler.motorDuty));
+                tv_pressure.setText(String.format("Strat:%d", veichleHandler.strategy));
                 tv_emergences.setText(veichleHandler.getEmergencyString());
+
+                if(veichleHandler.purge)
+                    tv_purge.setVisibility(View.VISIBLE);
+                else
+                    tv_purge.setVisibility(View.INVISIBLE);
+
+                if(veichleHandler.purge)
+                    tv_shortTW.setVisibility(View.VISIBLE);
+                else
+                    tv_shortTW.setVisibility(View.INVISIBLE);
+
+
 
 
                 mqttSender.publishMsg(SPEED_CHANNEL, Float.toString(veichleHandler.speedKmH));
