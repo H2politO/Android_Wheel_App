@@ -13,6 +13,7 @@ import com.hoho.android.usbserial.driver.UsbSerialProber;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,14 +22,13 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
     static final public byte DIRECT_MODE = 0;
     static final public byte NUCLEO_MODE = 1;
 
+    static final public byte IDRA = 1;
+    static final public byte JUNO = 1;
+
     final private byte TERMINATOR = '|';
     final private byte INITIATOR = '@';
     final private int BUFFER_LEN = 100;
 
-    //Dispalyed variables
-    public int speedKmH = 0;
-    public float pressure = 0;
-    public boolean btnEn = false;
 
     private boolean isMessageSending = false;
     private boolean isCallbackEnabled = false;
@@ -36,32 +36,28 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
     private int buffIndex = 0;
 
     public UsbSerialPort port;
+    private final byte veichle;
     private final Context baseContext;
     private final UsbManager usbManager;
     private Runnable onNewDataCallback;
 
-    //Standard constructor
-    public DataReceiver(UsbManager manager, Context context, byte mode) {
-
-        baseContext = context;
-        usbManager = manager;
-        initSerial( mode );
-    }
     //Constructor with callback
-    public DataReceiver(UsbManager manager, Context context, byte mode, Runnable newDataCallback) {
+    public DataReceiver(UsbManager manager, Context context, byte SerialMode, byte vecihleSelect, Runnable newDataCallback) {
 
         isCallbackEnabled = true;
         onNewDataCallback = newDataCallback;
         baseContext = context;
         usbManager = manager;
-        initSerial( mode );
+        veichle = vecihleSelect;
+        initSerial( SerialMode );
+
     }
 
     public void parseMsg(String inMsg){
         int msgId, msgLen;
 
-        short[] RxData;
-        RxData = new short[8]; //NOTE: using byte is not suitable as byte is signed in java and can cause issues
+        byte[] RxData;
+        RxData = new byte[8]; //NOTE: the value of RxData could be negative as there is no usnigned option, it should be handeld with getFloat or BYte.getUnsignedInt
 
         String[] inMsgArr = inMsg.split(":");
 
@@ -70,23 +66,14 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
         int msgArrIndex = 3;
 
         for(int rxDataIndex = 0; rxDataIndex < msgLen; rxDataIndex++) {
-            RxData[rxDataIndex] = (short) Integer.parseInt(inMsgArr[msgArrIndex]);
+            RxData[rxDataIndex] = (byte) Integer.parseInt(inMsgArr[msgArrIndex]);
             msgArrIndex++;
 
         }
 
-        switch(msgId){
-            case 31:
-                speedKmH = RxData[0];
-                break;
-            case 32:
-                btnEn = (RxData[0] == 1);
-                break;
-            case 33:
-                pressure = (RxData[0] | RxData[1] << 8) / (float) 100;
-            default:
-                break;
-        }
+        if(veichle == IDRA)
+            IdraActivity.veichleHandler.parseMessage(msgId, msgLen, RxData);
+
 
         if(isCallbackEnabled)
             onNewDataCallback.run();
@@ -131,6 +118,7 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
                 break;
         }
 
+        //customTable.addProduct(0x2341, 0x0043, CdcAcmSerialDriver.class);
         UsbSerialProber prober = new UsbSerialProber(customTable);
         List<UsbSerialDriver> availableDrivers = prober.findAllDrivers(usbManager);
 
@@ -172,6 +160,5 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
 
     @Override
     public void onRunError(Exception e) {
-
     }
 }

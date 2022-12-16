@@ -6,6 +6,30 @@
     android:layout_height="match_parent"
     tools:context=".IdraActivity">
 
+    <View
+        android:id="@+id/verticalDivider6"
+        android:layout_width="1dp"
+        android:layout_height="100dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/verticalDivider3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.75"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/firstDivider"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <View
+        android:id="@+id/verticalDivider5"
+        android:layout_width="1dp"
+        android:layout_height="100dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/verticalDivider3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/firstDivider"
+        app:layout_constraintVertical_bias="0.0" />
+
     <TextView
         android:id="@+id/usbDevice"
         android:layout_width="wrap_content"
@@ -13,10 +37,10 @@
         android:text="UsbDevice"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.1"
+        app:layout_constraintHorizontal_bias="0.024"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.100000024" />
+        app:layout_constraintVertical_bias="0.04" />
 
     <TextView
         android:id="@+id/speed"
@@ -26,10 +50,10 @@
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.905"
+        app:layout_constraintHorizontal_bias="0.836"
         app:layout_constraintStart_toEndOf="@+id/usbDevice"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.099" />
+        app:layout_constraintVertical_bias="0.1" />
 
     <TextView
         android:id="@+id/pressure"
@@ -48,14 +72,14 @@
         android:id="@+id/emergences"
         android:layout_width="75dp"
         android:layout_height="24dp"
-        android:text="Off"
+        android:text="E"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/pressure"
-        app:layout_constraintHorizontal_bias="0.113"
+        app:layout_constraintHorizontal_bias="0.081"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/usbDevice"
-        app:layout_constraintVertical_bias="0.248" />
+        app:layout_constraintVertical_bias="0.306" />
 
     <Button
         android:id="@+id/publishButton"
@@ -64,9 +88,197 @@
         android:text="Publish"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.093"
+        app:layout_constraintHorizontal_bias="0.017"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/emergences"
-        app:layout_constraintVertical_bias="0.633" />
+        app:layout_constraintVertical_bias="0.918" />
+
+    <View
+        android:id="@+id/firstDivider"
+        android:layout_width="wrap_content"
+        android:layout_height="2dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.25" />
+
+    <View
+        android:id="@+id/secondDevider"
+        android:layout_width="wrap_content"
+        android:layout_height="2dp"
+        android:layout_marginBottom="25dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/firstDivider"
+        app:layout_constraintVertical_bias="0.357" />
+
+    <View
+        android:id="@+id/thirdDevider"
+        android:layout_width="wrap_content"
+        android:layout_height="2dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/secondDevider"
+        app:layout_constraintVertical_bias="0.482" />
+
+    <View
+        android:id="@+id/verticalDivider1"
+        android:layout_width="2dp"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/firstDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.309"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <View
+        android:id="@+id/verticalDivider2"
+        android:layout_width="2dp"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/firstDivider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.65"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/fcVoltage"
+        android:layout_width="246dp"
+        android:layout_height="99dp"
+        android:text="FC"
+        app:layout_constraintBottom_toTopOf="@+id/firstDivider"
+        app:layout_constraintEnd_toStartOf="@+id/speed"
+        app:layout_constraintHorizontal_bias="0.629"
+        app:layout_constraintStart_toEndOf="@+id/usbDevice"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.333" />
+
+    <View
+        android:id="@+id/verticalDivider3"
+        android:layout_width="1dp"
+        android:layout_height="203dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/thirdDevider"
+        app:layout_constraintStart_toStartOf="@+id/thirdDevider"
+        app:layout_constraintTop_toBottomOf="@+id/secondDevider" />
+
+    <View
+        android:id="@+id/verticalDivider4"
+        android:layout_width="1dp"
+        android:layout_height="100dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/verticalDivider3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.239"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/firstDivider"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/purge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:text="Purge"
+        app:layout_constraintBottom_toTopOf="@+id/emergences"
+        app:layout_constraintEnd_toStartOf="@+id/fcVoltage"
+        app:layout_constraintHorizontal_bias="0.057"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.046" />
+
+    <TextView
+        android:id="@+id/shortTW"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="43dp"
+        android:layout_marginBottom="40dp"
+        android:text="C"
+        app:layout_constraintBottom_toTopOf="@+id/secondDevider"
+        app:layout_constraintEnd_toStartOf="@+id/verticalDivider5"
+        app:layout_constraintHorizontal_bias="0.491"
+        app:layout_constraintStart_toEndOf="@+id/verticalDivider4"
+        app:layout_constraintTop_toTopOf="@+id/firstDivider" />
+
+    <TextView
+        android:id="@+id/motor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="162dp"
+        android:layout_marginBottom="36dp"
+        android:text="MotorOn"
+        app:layout_constraintBottom_toTopOf="@+id/thirdDevider"
+        app:layout_constraintEnd_toStartOf="@+id/verticalDivider3"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/verticalDivider4"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/temperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="88dp"
+        android:layout_marginTop="52dp"
+        android:text="T"
+        app:layout_constraintBottom_toBottomOf="@+id/verticalDivider6"
+        app:layout_constraintEnd_toStartOf="@+id/verticalDivider6"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/verticalDivider5"
+        app:layout_constraintTop_toBottomOf="@+id/verticalDivider2"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/fccCurrent"
+        android:layout_width="366dp"
+        android:layout_height="98dp"
+        android:text="0A"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@+id/thirdDevider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/verticalDivider3"
+        app:layout_constraintTop_toBottomOf="@+id/verticalDivider6"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/powerMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:text="Power Mode"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/verticalDivider3"
+        app:layout_constraintHorizontal_bias="0.482"
+        app:layout_constraintStart_toStartOf="@+id/thirdDevider"
+        app:layout_constraintTop_toBottomOf="@+id/thirdDevider" />
+
+    <TextView
+        android:id="@+id/actuationOn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="Actuation"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/thirdDevider"
+        app:layout_constraintHorizontal_bias="0.511"
+        app:layout_constraintStart_toEndOf="@+id/verticalDivider3"
+        app:layout_constraintTop_toBottomOf="@+id/fccCurrent"
+        app:layout_constraintVertical_bias="0.062" />
 
 </androidx.constraintlayout.widget.ConstraintLayout >

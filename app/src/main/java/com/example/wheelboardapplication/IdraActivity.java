@@ -11,14 +11,18 @@ import android.hardware.usb.UsbManager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.nio.charset.StandardCharsets;
@@ -36,37 +40,42 @@ public class IdraActivity extends AppCompatActivity {
 
 
     //varUsb
+    static IdraHandler veichleHandler; //class that contains all veichle specific variables
     DataReceiver dataReceiver; //class for parse the dataIn
     UsbDevice device;
+    Intent intent = new Intent(ACTION_USB_PERMISSION);
 
     //varMqtt
     String clientId = MqttClient.generateClientId();
-    public MqttAndroidClient mqttClient;
-    boolean connectedClient = false;
+    MqttSender mqttSender;
 
-
-    Intent intent = new Intent(ACTION_USB_PERMISSION);
-
-
-    //textView
+    //UI var
     TextView tv_deviceUsb;
     TextView tv_speed;
     TextView tv_pressure;
     TextView tv_emergences;
+    TextView tv_fccCurrent;
+    TextView tv_temperature;
+
     Button bt_publish;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_idra);
+
         tv_deviceUsb = findViewById(R.id.usbDevice);
         tv_speed = findViewById(R.id.speed);
         tv_pressure = findViewById(R.id.pressure);
         tv_emergences = findViewById(R.id.emergences);
+        tv_fccCurrent = findViewById(R.id.fccCurrent);
+        tv_temperature = findViewById(R.id.temperature);
         bt_publish = findViewById(R.id.publishButton);
 
-        //initiSerial comunication, and request permission
+        //initSerial communication, and request permission
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         //hash map if are more than one device
         HashMap<String, UsbDevice> deviceMap = usbManager.getDeviceList();
@@ -77,59 +86,36 @@ public class IdraActivity extends AppCompatActivity {
             tv_deviceUsb.setText("Device found");
 
             //call method permission if necessary
-            PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+            PendingIntent permissionIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE);
             IntentFilter intentFilter = new IntentFilter(ACTION_USB_PERMISSION);
             registerReceiver(usbReceiver, intentFilter);
 
             usbManager.requestPermission(device, permissionIntent);
+            //initSerial();
         }else{
             tv_deviceUsb.setText("Device not found");
         }
 
         //connection with client mqtt
-        mqttClient = new MqttAndroidClient(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
-        //MqttSender mqttSender = new MqttSender(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
-
-        try{
-            IMqttToken token = mqttClient.connect();
-            token.setActionCallback(new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    Toast.makeText(IdraActivity.this, "Mqtt client connect", Toast.LENGTH_SHORT).show();
-                    connectedClient = true;
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    Toast.makeText(IdraActivity.this, "Mqtt client not connect",  Toast.LENGTH_SHORT).show();
-                    connectedClient = false;
-                }
-            });
-            token.getActionCallback();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-
-        publish(SPEED_CHANNEL, "20");
+        mqttSender = new MqttSender(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
 
         bt_publish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                publish(SPEED_CHANNEL, "23");
+                mqttSender.publishMsg(SPEED_CHANNEL, "25");
             }
         });
+
+        veichleHandler = new IdraHandler();
+
+
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
-
         //initSerial();
-        //MqttSender mqttSender = new MqttSender(IdraActivity.this, SERVER_URI, clientId, Ack.AUTO_ACK);
-        //mqttSender.publishMsg(SPEED_CHANNEL, "20");
-        publish(SPEED_CHANNEL, "23");
     }
 
 
@@ -158,29 +144,21 @@ public class IdraActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void initSerial(){
         UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        dataReceiver = new DataReceiver(usbManager, IdraActivity.this, DataReceiver.DIRECT_MODE, () -> {
+        dataReceiver = new DataReceiver(usbManager, IdraActivity.this, DataReceiver.DIRECT_MODE, DataReceiver.IDRA, () -> {
             runOnUiThread(() ->{
                 //set ui interface
-                tv_speed.setText(Integer.toString(dataReceiver.speedKmH));
-                publish(SPEED_CHANNEL, Integer.toString(dataReceiver.speedKmH));
+                tv_speed.setText(String.format("%.2f Km/h", veichleHandler.speedKmH));
+                tv_fccCurrent.setText(String.format("%.2f A", veichleHandler.fuelCellAmps));
+                tv_temperature.setText(String.format("%.2f °C", veichleHandler.fuelCellTemp));
+
+                tv_pressure.setText(String.format("%.0f perc", veichleHandler.motorDuty));
+                tv_emergences.setText(veichleHandler.getEmergencyString());
+
+
+                mqttSender.publishMsg(SPEED_CHANNEL, Float.toString(veichleHandler.speedKmH));
             });
         });
 
     }
 
-    private void publish(String topic, byte[] payload){
-        if(!connectedClient)
-            return;
-
-        MqttMessage message = new MqttMessage(payload);
-        message.setQos(0);
-        message.setRetained(true);
-        IMqttDeliveryToken iMqttDeliveryToken = mqttClient.publish(topic, message);
-
-    }
-
-    private void publish(String topic, String payload){
-        byte[] data = payload.getBytes(StandardCharsets.UTF_8);
-        publish(topic, data);
-    }
 }
