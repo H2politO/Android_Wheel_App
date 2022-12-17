@@ -31,7 +31,6 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
 
 
     private boolean isMessageSending = false;
-    private boolean isCallbackEnabled = false;
     private byte[] dataBuff = new byte[BUFFER_LEN];
     private int buffIndex = 0;
 
@@ -39,12 +38,11 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
     private final byte veichle;
     private final Context baseContext;
     private final UsbManager usbManager;
-    private Runnable onNewDataCallback;
+    private static Runnable onNewDataCallback;
 
     //Constructor with callback
     public DataReceiver(UsbManager manager, Context context, byte SerialMode, byte vecihleSelect, Runnable newDataCallback) {
 
-        isCallbackEnabled = true;
         onNewDataCallback = newDataCallback;
         baseContext = context;
         usbManager = manager;
@@ -75,8 +73,7 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
             IdraActivity.veichleHandler.parseMessage(msgId, msgLen, RxData);
 
 
-        if(isCallbackEnabled)
-            onNewDataCallback.run();
+        onNewDataCallback.run();
     }
 
     public void pushBuff(byte[] data){
@@ -152,6 +149,9 @@ public class DataReceiver implements SerialInputOutputManager.Listener {
 
     }
 
+    static void forceUpdate(){
+        onNewDataCallback.run();
+    }
 
     @Override
     public void onNewData(byte[] data) {

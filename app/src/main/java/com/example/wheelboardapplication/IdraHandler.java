@@ -2,6 +2,8 @@ package com.example.wheelboardapplication;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class IdraHandler {
     //EMERGENCIES
@@ -40,19 +42,31 @@ public class IdraHandler {
     static final private int buttonsID = 0x020;
 
     private long lastActHBTime = 0;
-    private long currActHBTime = 0;
+    private long currMsgTime = 0;
 
     IdraHandler(){
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                //ENSURE parseMessage runs at least once every second
+                if(System.currentTimeMillis() - currMsgTime > 750) {
+                    parseMessage(-1, 0, null);
+                    DataReceiver.forceUpdate();
+                }
+            }
+        }, 0, 1000);//put here time 1000 milliseconds=1 second
+
     }
 
     public void parseMessage( int msgId, int msgLen, byte[] RxData){
 
-        actuationOn = (lastActHBTime - currActHBTime) <= 1100;
+        currMsgTime = System.currentTimeMillis();
+        long test = (currMsgTime - lastActHBTime);
+        actuationOn = test <= 1100;
 
         switch(msgId){
             case actuationHB:
-                lastActHBTime = currActHBTime;
-                currActHBTime = System.currentTimeMillis();
+                lastActHBTime = currMsgTime;
                 break;
             case emeID:
                 H2Eme = (Byte.toUnsignedInt(RxData[0]) == 1);
@@ -113,7 +127,7 @@ public class IdraHandler {
         return outValue;
     }
 
-    public float byteToFloat(byte... data) {
+    private float byteToFloat(byte... data) {
         return ByteBuffer.wrap(data).getFloat();
     }
 
