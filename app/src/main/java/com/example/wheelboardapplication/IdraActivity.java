@@ -28,7 +28,6 @@ public class IdraActivity extends AppCompatActivity {
     //constant for mqttPublish
     private static final String SERVER_URI = "tcp://broker.hivemq.com:1883";
 
-
     private static final String STATUS_CHANNEL = "H2polito/Idra/Status";
     private static final String SHORT_CHANNEL = "H2polito/Idra/Short";
     private static final String POWERMODE_CHANNEL = "H2polito/Idra/PowerMode";
@@ -75,6 +74,9 @@ public class IdraActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_idra);
 
+        //Inserted to hide Android status bar
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         tv_deviceUsb = findViewById(R.id.usbDevice);
         tv_speed = findViewById(R.id.speed);
         tv_pressure = findViewById(R.id.pressure);
@@ -119,9 +121,7 @@ public class IdraActivity extends AppCompatActivity {
             }
         });
 
-        veichleHandler = new IdraHandler();
-
-
+        veichleHandler = new IdraHandler(deviceMap.size());
     }
 
 

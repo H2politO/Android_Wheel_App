@@ -1,10 +1,16 @@
 package com.example.wheelboardapplication;
 
+import android.content.Context;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import java.util.Calendar;
+import java.util.Date;
 public class IdraHandler {
     //EMERGENCIES
     public boolean H2Eme = false;
@@ -44,18 +50,64 @@ public class IdraHandler {
     private long lastActHBTime = 0;
     private long currMsgTime = 0;
 
-    IdraHandler(){
+    private File file;
+    private FileWriter writer;
+
+    Context context;
+
+    IdraHandler(int isDeiviceConnected){
+
+        createFile();
+        writeToFile("Prova");
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 //ENSURE parseMessage runs at least once every second
                 if(System.currentTimeMillis() - currMsgTime > 750) {
                     parseMessage(-1, 0, null);
-                    DataReceiver.forceUpdate();
+
+                    //Avoids update and crashes if the device is not connected
+                    if(isDeiviceConnected==1){
+                        DataReceiver.forceUpdate();
+                    }
+
                 }
             }
         }, 0, 1000);//put here time 1000 milliseconds=1 second
 
+    }
+
+    public String createFile(){
+
+        Date currentTime = Calendar.getInstance().getTime();
+
+        //context.getApplicationContext();
+
+        File dir = new File(context.getFilesDir(), "mydir");
+        if(!dir.exists()){
+            dir.mkdir();
+        }
+
+        try {
+            file = new File(dir, "ASDaaaa");
+            writer = new FileWriter(file);
+
+            //writer.close();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return currentTime.toString();
+    }
+
+    public void writeToFile(String data){
+
+        try {
+            writer.append(data);
+            writer.flush();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void parseMessage( int msgId, int msgLen, byte[] RxData){
